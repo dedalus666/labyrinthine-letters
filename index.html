@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400;1,600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #13110e; }
+  * { box-sizing: border-box; }
+  ::selection { background: #7a5820; color: #f0e9d6; }
+  @keyframes twinkle { 0%,100% { opacity: .25; } 50% { opacity: .9; } }
+  input::placeholder, textarea::placeholder { color: #7a5820; opacity: .8; }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:linear-gradient(180deg,#1a1612 0%,#13110e 55%,#0f0d0a 100%);color:#f0e9d6;font-family:'Cormorant Garamond',serif;position:relative;overflow-x:hidden">
+
+  <header style="position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:rgba(19,17,14,.78);backdrop-filter:blur(10px);border-bottom:1px solid rgba(201,147,58,.25);flex-wrap:wrap;gap:14px">
+    <div onClick="{{ goHome }}" style="cursor:pointer;line-height:1.1">
+      <div style="font-family:Cinzel,serif;font-weight:700;font-size:19px;letter-spacing:.12em;color:#f0e9d6">LABYRINTHINE LETTERS</div>
+      <div style="font-family:'IM Fell English',serif;font-style:italic;color:#8a9ba8;font-size:13px;margin-top:2px">Art is the maze. Lose yourself.</div>
+    </div>
+    <nav style="display:flex;gap:26px;align-items:center;flex-wrap:wrap">
+      <a onClick="{{ goHome }}" style="font-family:Cinzel,serif;font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:#c9933a;cursor:pointer;text-decoration:none">Home</a>
+      <sc-for list="{{ categories }}" as="cat" hint-placeholder-count="5">
+        <a onClick="{{ cat.onClick }}" style="font-family:Cinzel,serif;font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;text-decoration:none" style-hover="color:#e8b85a" data-active="{{ cat.active }}">{{ cat.label }}</a>
+      </sc-for>
+      <button onClick="{{ onAdminClick }}" style="background:none;border:1px solid rgba(201,147,58,.4);color:#c9933a;font-family:Cinzel,serif;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;padding:7px 14px;cursor:pointer" style-hover="border-color:#e8b85a;color:#e8b85a">{{ adminLabel }}</button>
+    </nav>
+  </header>
+
+  <sc-if value="{{ adminGateOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px">
+      <div style="background:#1a1612;border:1px solid rgba(201,147,58,.4);max-width:360px;width:100%;padding:28px;color:#f0e9d6">
+        <h3 style="font-family:Cinzel,serif;font-size:14px;letter-spacing:.15em;text-transform:uppercase;color:#c9933a;margin:0 0 18px">Admin Passphrase</h3>
+        <input type="password" value="{{ adminPassInput }}" onChange="{{ setAdminPassInput }}" placeholder="Passphrase" style="width:100%;background:rgba(240,233,214,.05);border:1px solid rgba(201,147,58,.3);color:#f0e9d6;font-family:'Cormorant Garamond',serif;font-size:16px;padding:10px 12px;outline:none;margin-bottom:12px" style-focus="border-color:#c9933a"/>
+        <sc-if value="{{ adminError }}" hint-placeholder-val="{{ false }}">
+          <p style="color:#c96a3a;font-size:13.5px;margin:0 0 12px">{{ adminError }}</p>
+        </sc-if>
+        <div style="display:flex;gap:10px">
+          <button onClick="{{ submitAdminPass }}" style="background:#c9933a;border:none;color:#13110e;font-family:Cinzel,serif;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;padding:10px 20px;cursor:pointer" style-hover="background:#e8b85a">Unlock</button>
+          <button onClick="{{ closeAdminGate }}" style="background:none;border:1px solid rgba(138,155,168,.4);color:#8a9ba8;font-family:Cinzel,serif;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;padding:10px 20px;cursor:pointer">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ composerOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:60px 20px">
+      <div style="background:#1a1612;border:1px solid rgba(201,147,58,.4);max-width:640px;width:100%;padding:34px;color:#f0e9d6">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+          <h3 style="font-family:Cinzel,serif;font-size:16px;letter-spacing:.15em;text-transform:uppercase;color:#c9933a;margin:0">New Entry</h3>
+          <button onClick="{{ closeComposer }}" style="background:none;border:none;color:#8a9ba8;font-size:20px;cursor:pointer;line-height:1">&times;</button>
+        </div>
+
+        <sc-if value="{{ publishedSnippet }}" hint-placeholder-val="{{ false }}">
+          <div style="background:rgba(201,147,58,.08);border:1px solid rgba(201,147,58,.35);padding:16px;margin-bottom:22px">
+            <p style="margin:0 0 10px;font-size:15px;color:#e8b85a;font-family:'IM Fell English',serif;font-style:italic">Saved to this browser. To publish permanently for everyone, paste this into <code>POSTS_BASE</code> in the file and push to GitHub:</p>
+            <textarea readonly value="{{ publishedSnippet }}" style="width:100%;height:140px;background:#0f0d0a;color:#c9c2ab;border:1px solid rgba(201,147,58,.3);font-family:monospace;font-size:12px;padding:10px"></textarea>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <input value="{{ draftTitle }}" onChange="{{ setDraftTitle }}" placeholder="Title" style="background:rgba(240,233,214,.05);border:1px solid rgba(201,147,58,.3);color:#f0e9d6;font-family:'Cormorant Garamond',serif;font-size:17px;padding:11px 13px;outline:none"/>
+          <div style="display:flex;gap:14px">
+            <select value="{{ draftCategory }}" onChange="{{ setDraftCategory }}" style="flex:1;background:#1a1612;border:1px solid rgba(201,147,58,.3);color:#f0e9d6;font-family:Cinzel,serif;font-size:13px;padding:11px">
+              <sc-for list="{{ categoryOptions }}" as="c" hint-placeholder-count="5">
+                <option value="{{ c }}" key="{{ c }}">{{ c }}</option>
+              </sc-for>
+            </select>
+            <input type="date" value="{{ draftDate }}" onChange="{{ setDraftDate }}" style="background:#1a1612;border:1px solid rgba(201,147,58,.3);color:#f0e9d6;font-family:'Cormorant Garamond',serif;font-size:15px;padding:11px"/>
+          </div>
+          <input value="{{ draftTags }}" onChange="{{ setDraftTags }}" placeholder="Tags, comma separated" style="background:rgba(240,233,214,.05);border:1px solid rgba(201,147,58,.3);color:#f0e9d6;font-family:'Cormorant Garamond',serif;font-size:16px;padding:11px 13px;outline:none"/>
+          <input value="{{ draftExcerpt }}" onChange="{{ setDraftExcerpt }}" placeholder="Short excerpt (shown in list view)" style="background:rgba(240,233,214,.05);border:1px solid rgba(201,147,58,.3);color:#f0e9d6;font-family:'Cormorant Garamond',serif;font-size:16px;padding:11px 13px;outline:none"/>
+          <input value="{{ draftQuote }}" onChange="{{ setDraftQuote }}" placeholder="Pull-quote (optional)" style="background:rgba(240,233,214,.05);border:1px solid rgba(201,147,58,.3);color:#f0e9d6;font-family:'IM Fell English',serif;font-style:italic;font-size:16px;padding:11px 13px;outline:none"/>
+          <textarea value="{{ draftBody }}" onChange="{{ setDraftBody }}" placeholder="Body — separate paragraphs with a blank line" rows="8" style="background:rgba(240,233,214,.05);border:1px solid rgba(201,147,58,.3);color:#f0e9d6;font-family:'Cormorant Garamond',serif;font-size:16px;padding:11px 13px;outline:none;resize:vertical"></textarea>
+          <sc-if value="{{ adminError }}" hint-placeholder-val="{{ false }}">
+            <p style="color:#c96a3a;font-size:14px;margin:0">{{ adminError }}</p>
+          </sc-if>
+          <button onClick="{{ saveDraft }}" style="align-self:flex-start;background:#c9933a;border:none;color:#13110e;font-family:Cinzel,serif;font-size:12px;letter-spacing:.15em;text-transform:uppercase;padding:12px 24px;cursor:pointer" style-hover="background:#e8b85a">Save Entry</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <section style="position:relative;padding:80px 40px 56px;text-align:center">
+      <div style="position:absolute;inset:0;pointer-events:none">
+        <sc-for list="{{ stars }}" as="s" hint-placeholder-count="0">
+          <div style="position:absolute;width:2px;height:2px;border-radius:50%;background:#e8b85a;left:{{ s.left }};top:{{ s.top }};animation:twinkle {{ s.dur }} ease-in-out infinite;animation-delay:{{ s.delay }}"></div>
+        </sc-for>
+      </div>
+      <div style="position:relative;font-family:Cinzel,serif;font-size:12px;letter-spacing:.35em;color:#c9933a;text-transform:uppercase;margin-bottom:18px">A Private Catalogue of Words</div>
+      <h1 style="position:relative;font-family:Cinzel,serif;font-weight:700;font-size:clamp(32px,6vw,80px);letter-spacing:.03em;margin:0;color:#f0e9d6;text-shadow:0 0 40px rgba(201,147,58,.15)">LABYRINTHINE LETTERS</h1>
+      <p style="position:relative;font-family:'IM Fell English',serif;font-style:italic;color:#8a9ba8;font-size:19px;margin:22px auto 0;max-width:560px">Poetry, lyrics, stories, and stray thoughts &mdash; each entry a room in the labyrinth.</p>
+      <div style="position:relative;width:110px;height:1px;margin:30px auto 0;background:linear-gradient(90deg,transparent,#c9933a,transparent)"></div>
+    </section>
+  </sc-if>
+
+  <div style="max-width:1180px;margin:0 auto;padding:{{ contentTopPad }} 40px 60px;display:grid;grid-template-columns:1fr 320px;gap:56px;align-items:start">
+
+    <main style="min-width:0">
+
+      <sc-if value="{{ viewingPost }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <button onClick="{{ goHome }}" style="background:none;border:1px solid rgba(201,147,58,.4);color:#c9933a;font-family:Cinzel,serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:9px 18px;cursor:pointer;margin-bottom:34px" style-hover="border-color:#e8b85a;color:#e8b85a">&larr; All Entries</button>
+
+          <div style="font-family:Cinzel,serif;font-size:12px;letter-spacing:.3em;color:#c9933a;text-transform:uppercase;margin-bottom:14px">{{ currentPost.category }}</div>
+          <h1 style="font-family:Cinzel,serif;font-weight:600;font-size:clamp(30px,4.5vw,52px);line-height:1.15;margin:0 0 16px;color:#f0e9d6">{{ currentPost.title }}</h1>
+          <div style="color:#8a9ba8;font-size:15px;letter-spacing:.03em;margin-bottom:30px">{{ currentPost.dateDisplay }}</div>
+
+          <sc-if value="{{ currentPost.quote }}" hint-placeholder-val="{{ false }}">
+            <blockquote style="font-family:'IM Fell English',serif;font-style:italic;color:#e8b85a;font-size:22px;line-height:1.6;border-left:2px solid #c9933a;padding-left:24px;margin:0 0 34px">{{ currentPost.quote }}</blockquote>
+          </sc-if>
+
+          <div style="font-size:19px;line-height:1.9;color:#e9e2cf">
+            <sc-for list="{{ currentPost.body }}" as="para" hint-placeholder-count="4">
+              <p style="margin:0 0 22px">{{ para }}</p>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:9px;margin:36px 0 30px">
+            <sc-for list="{{ currentPost.tagChips }}" as="t" hint-placeholder-count="3">
+              <button onClick="{{ t.onClick }}" style="background:rgba(201,147,58,.08);border:1px solid rgba(201,147,58,.35);color:#c9933a;font-family:Cinzel,serif;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:6px 13px;border-radius:2px;cursor:pointer" style-hover="border-color:#e8b85a;color:#e8b85a">#{{ t.name }}</button>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:18px;padding:20px 0;border-top:1px solid rgba(201,147,58,.2);border-bottom:1px solid rgba(201,147,58,.2)">
+            <button onClick="{{ currentPost.onLike }}" style="background:none;border:1px solid {{ currentPost.likeBorder }};color:{{ currentPost.likeColor }};font-family:Cinzel,serif;font-size:12px;letter-spacing:.1em;padding:9px 20px;cursor:pointer;display:flex;align-items:center;gap:8px">
+              <span>{{ currentPost.likeGlyph }}</span> {{ currentPost.likeCount }} {{ currentPost.likeWord }}
+            </button>
+            <span style="color:#8a9ba8;font-size:14px;letter-spacing:.05em">{{ currentPost.commentCountLabel }}</span>
+          </div>
+
+          <section style="margin-top:44px">
+            <h3 style="font-family:Cinzel,serif;font-size:14px;letter-spacing:.2em;text-transform:uppercase;color:#c9933a;margin:0 0 26px">Comments</h3>
+
+            <sc-for list="{{ currentPost.comments }}" as="c" hint-placeholder-count="2">
+              <div style="padding:18px 0;border-bottom:1px solid rgba(201,147,58,.12)">
+                <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:6px">
+                  <strong style="font-family:Cinzel,serif;font-size:13px;letter-spacing:.05em;color:#f0e9d6">{{ c.author }}</strong>
+                  <span style="color:#7a5820;font-size:12.5px">{{ c.date }}</span>
+                </div>
+                <p style="margin:0;color:#d8cfb6;font-size:16.5px;line-height:1.7">{{ c.text }}</p>
+              </div>
+            </sc-for>
+
+            <div style="margin-top:28px;padding:22px;background:rgba(0,0,0,.25);border:1px solid rgba(201,147,58,.2)">
+              <div style="font-family:Cinzel,serif;font-size:11.5px;letter-spacing:.15em;text-transform:uppercase;color:#c9933a;margin-bottom:14px">Leave a Thought</div>
+              <input value="{{ commentName }}" onChange="{{ setCommentName }}" placeholder="Your name" style="width:100%;background:rgba(240,233,214,.05);border:1px solid rgba(201,147,58,.3);color:#f0e9d6;font-family:'Cormorant Garamond',serif;font-size:16px;padding:11px 13px;margin-bottom:12px;outline:none" style-focus="border-color:#c9933a"/>
+              <textarea value="{{ commentDraft }}" onChange="{{ setCommentDraft }}" placeholder="What did this stir in you?" rows="3" style="width:100%;background:rgba(240,233,214,.05);border:1px solid rgba(201,147,58,.3);color:#f0e9d6;font-family:'Cormorant Garamond',serif;font-size:16px;padding:11px 13px;outline:none;resize:vertical" style-focus="border-color:#c9933a"></textarea>
+              <button onClick="{{ submitComment }}" style="margin-top:14px;background:#c9933a;border:none;color:#13110e;font-family:Cinzel,serif;font-size:11.5px;letter-spacing:.15em;text-transform:uppercase;padding:11px 22px;cursor:pointer" style-hover="background:#e8b85a">Post Comment</button>
+            </div>
+          </section>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ !viewingPost }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <sc-if value="{{ filterLabel }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:30px;font-family:Cinzel,serif;font-size:12px;letter-spacing:.1em;color:#8a9ba8;text-transform:uppercase">
+              <span>{{ filterLabel }}</span>
+              <button onClick="{{ clearFilters }}" style="background:none;border:1px solid rgba(138,155,168,.4);color:#8a9ba8;font-family:Cinzel,serif;font-size:10.5px;letter-spacing:.1em;padding:5px 12px;cursor:pointer" style-hover="border-color:#c9933a;color:#c9933a">Clear</button>
+            </div>
+          </sc-if>
+
+          <sc-for list="{{ filteredPosts }}" as="post" hint-placeholder-count="4">
+            <article onClick="{{ post.onOpen }}" style="cursor:pointer;padding:30px 0;border-bottom:1px solid rgba(201,147,58,.15)">
+              <div style="font-family:Cinzel,serif;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#c9933a;margin-bottom:10px">{{ post.category }} &middot; {{ post.dateDisplay }}</div>
+              <h2 style="font-family:Cinzel,serif;font-weight:600;font-size:clamp(22px,3vw,32px);margin:0 0 12px;color:#f0e9d6">{{ post.title }}</h2>
+              <p style="font-size:17.5px;line-height:1.75;color:#c9c2ab;margin:0 0 14px;max-width:640px">{{ post.excerpt }}</p>
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:14px">
+                <sc-for list="{{ post.tagNames }}" as="tg" hint-placeholder-count="2">
+                  <span style="font-size:12.5px;color:#7a5820;letter-spacing:.04em">#{{ tg }}</span>
+                </sc-for>
+                <span style="margin-left:auto;color:#8a9ba8;font-size:13px;letter-spacing:.03em">{{ post.likeCount }} likes &middot; {{ post.commentCount }} comments</span>
+              </div>
+            </article>
+          </sc-for>
+
+          <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+            <p style="font-family:'IM Fell English',serif;font-style:italic;color:#8a9ba8;font-size:19px;padding:40px 0">No entries found down this passage. Try another turn.</p>
+          </sc-if>
+        </div>
+      </sc-if>
+
+    </main>
+
+    <aside style="position:sticky;top:96px;display:flex;flex-direction:column;gap:34px">
+
+      <div>
+        <input value="{{ search }}" onChange="{{ setSearch }}" placeholder="Search the labyrinth&hellip;" style="width:100%;background:rgba(240,233,214,.05);border:1px solid rgba(201,147,58,.35);color:#f0e9d6;font-family:'Cormorant Garamond',serif;font-size:16.5px;padding:12px 15px;outline:none" style-focus="border-color:#c9933a"/>
+      </div>
+
+      <div>
+        <h4 style="font-family:Cinzel,serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#c9933a;margin:0 0 16px;padding-bottom:10px;border-bottom:1px solid rgba(201,147,58,.2)">Tags</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ tagList }}" as="t" hint-placeholder-count="6">
+            <button onClick="{{ t.onClick }}" style="background:{{ t.bg }};border:1px solid {{ t.border }};color:{{ t.color }};font-family:Cinzel,serif;font-size:10.5px;letter-spacing:.08em;padding:6px 12px;cursor:pointer" style-hover="border-color:#e8b85a;color:#e8b85a">{{ t.name }} ({{ t.count }})</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div>
+        <h4 style="font-family:Cinzel,serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#c9933a;margin:0 0 16px;padding-bottom:10px;border-bottom:1px solid rgba(201,147,58,.2)">Contents</h4>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <sc-for list="{{ indexList }}" as="p" hint-placeholder-count="8">
+            <a onClick="{{ p.onOpen }}" style="cursor:pointer;text-decoration:none;display:flex;justify-content:space-between;gap:10px;color:{{ p.color }};font-size:15px;line-height:1.4" style-hover="color:#e8b85a">
+              <span>{{ p.title }}</span>
+              <span style="color:#7a5820;font-size:12.5px;white-space:nowrap">{{ p.dateShort }}</span>
+            </a>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="padding-top:10px;border-top:1px solid rgba(201,147,58,.2)">
+        <h4 style="font-family:Cinzel,serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#c9933a;margin:0 0 14px">About</h4>
+        <p style="font-family:'IM Fell English',serif;font-style:italic;color:#8a9ba8;font-size:16px;line-height:1.7;margin:0">A working notebook of poems, lyrics, stories, and reviews &mdash; kept alongside <em>Piranesi</em>, <em>Lord Jim</em>, and <em>The Magician's Ledger</em>. Comments and likes welcome; nothing here is finished.</p>
+      </div>
+
+    </aside>
+  </div>
+
+  <footer style="text-align:center;padding:44px 40px 50px;border-top:1px solid rgba(201,147,58,.15)">
+    <div style="width:90px;height:1px;margin:0 auto 20px;background:linear-gradient(90deg,transparent,#c9933a,transparent)"></div>
+    <div style="font-family:'IM Fell English',serif;font-style:italic;color:#8a9ba8;font-size:15px;margin-bottom:8px">Art is the maze. Lose yourself.</div>
+    <div style="color:#7a5820;font-size:12.5px;letter-spacing:.05em">&copy; Labyrinthine Letters</div>
+  </footer>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const CATEGORY_LIST = ['Poetry','Song Lyrics','Short Stories','Reviews','Essays'];
+
+const POSTS_BASE = [
+  {
+    id: 'eddie-van-halen',
+    category: 'Essays',
+    title: 'Eddie Van Halen',
+    date: '2020-10-31',
+    tags: ['music', 'memoir', 'guitar'],
+    excerpt: 'It was summertime in the late 70\u2019s and I was standing over the massive console stereo cabinet in the family room of our house \u2014 about to hear something I could not explain.',
+    quote: '"I think he has a special switch on the back of his guitar."',
+    body: [
+      'It was summertime in the late 70\u2019s and I was standing over the massive console stereo cabinet in the family room of our house. The ornately carved, coffin-like wooden box was the center piece of furniture in the large space, storage specially crafted for vinyl records, and it was full of them.',
+      'On this day, like many others, I carefully placed the needle on the newest addition to the stack that had caught my eye. The logo in the center stood out like a hood ornament: a sharp-edged, silvery blue emblem of shining, metallic wings in the shape of the letters VH.',
+      'What came next was a blur \u2014 a long, droning chorus of car horns, rising, and then a guitar slashed out like a demon\u2019s claws, called forth by a dry, tribal beat of toms while a madman howled into the abyss over it all.',
+      'That moment ended as fast as it began, and I realized I was not alone in the room. A neighborhood boy stood beside me, wearing the same dazed look I must have been wearing. He offered the only explanation either of us could grasp: he has a special switch on the back of his guitar.',
+      'We would of course learn later that it was just a man \u2014 an incredibly talented wonder of a human being. There was no switch. The sound, the magic, the tone, came from Eddie Van Halen alone. The bar was sky-high before Van Halen. Now it was in outer space.'
+    ],
+    likes: 14,
+    comments: [
+      { author: 'M. Alvarez', date: 'Nov 2, 2020', text: 'This took me right back to my own console stereo. That description of the horns at the start of the album is exactly right.' }
+    ]
+  },
+  {
+    id: 'ghosteen',
+    category: 'Reviews',
+    title: 'Nick Cave & the Bad Seeds \u2014 Ghosteen',
+    date: '2019-12-30',
+    tags: ['music', 'review', 'grief'],
+    excerpt: 'A sonically dense cloud of swirling drones, stark keys, and atmospheric synths make up the entirety of the eleven songs \u2014 the best record of the year, maybe the decade.',
+    quote: null,
+    body: [
+      'Nick Cave\u2019s latest record \u2018Ghosteen\u2019 is, in my opinion, the best album of the year. Perhaps the greatest collection of songs this decade, and arguably the pinnacle of the artist\u2019s long and storied anthology.',
+      'A sonically dense cloud of swirling drones, stark, desolate keys and atmospheric synths make up the entirety of the eleven songs. Together with Cave\u2019s storytelling narrative, they conjure a hypnotic trance-like state that both lifts and descends into darkness and light.',
+      'It is, at its core, an expression of the complex fragility of relationships entangled in a spiral of shared grief \u2014 a struggle to cope with excruciating loss, all the while painfully aware of the severed threads on the mortal bonds we have with those that remain.',
+      'Percussion of any kind is sparse and intermittent at best. There are few guitars and no dramatic drums. His magic is in his words and the voice he gives them, often breaking to the point of faltering entirely, raw and unfiltered.',
+      'As the record closes, the song \u2018Hollywood\u2019 echoes a stark reality: it\u2019s a long way to find peace of mind. I\u2019m just waiting now, for peace to come.'
+    ],
+    likes: 22,
+    comments: []
+  },
+  {
+    id: 'sailors-overture',
+    category: 'Song Lyrics',
+    title: 'Sailor\u2019s Overture',
+    date: '2024-02-14',
+    tags: ['lyrics', 'lord-jim', 'sea'],
+    excerpt: 'The opening number from Lord Jim \u2014 a young man\u2019s dream meeting the unforgiving sea, before the guilt and the honor bear down.',
+    quote: '"Guilt and honor bearing down on his redemption."',
+    body: [
+      'Verse 1',
+      'On the endless sea, where the waves run free, a young man sails with dreams in his eyes. Bound for distant shores, where adventure roars, he\u2019s eager for the world to realize \u2014 to be the captain of a ship will be his prize.',
+      'Chorus',
+      'Sailor, sailor, on the open sea, your destiny awaits, what will it be? Sailor, sailor, wind in your sails, a life of adventures, thrilling ocean tales. Sailor, sailor, the stars as your guide, raise your anchor, set your course and let your spirit ride.',
+      'Outro',
+      'So our adventure now begins, with the rising of the sun, a tale of a sailor\u2019s life, the battles lost and the battles won. Guilt and honor bearing down on his redemption.'
+    ],
+    likes: 9,
+    comments: [
+      { author: 'R. Bishop', date: 'Feb 16, 2024', text: 'The outro foreshadowing is so good \u2014 didn\u2019t catch it until the second listen through the whole record.' }
+    ]
+  },
+  {
+    id: 'zabars',
+    category: 'Essays',
+    title: 'Zabar\u2019s',
+    date: '2015-01-30',
+    tags: ['memoir', 'new-york'],
+    excerpt: 'In November of 1989 I decided I simply had to live in New York City. I circled three classified ads and called the first one \u2014 Zabar\u2019s.',
+    quote: '"Over time, I realized the store was to Saul Zabar what music was to me."',
+    body: [
+      'In November of 1989, after residing in New Jersey for a number of years, I decided that I simply had to live in New York City. I opened up the classified ads, circled three places hiring, and called the first one \u2014 which was Zabar\u2019s.',
+      'The store never seemed to slow down, and though the work was hard, I was surrounded by an amazingly diverse group of co-workers whose lives interested me to no end. Many had recently emigrated from overseas, and to them this work was as vital as breathing.',
+      'Saul took me under his wing, challenging me, teaching me, always giving me newer and more responsibilities. Eventually the inventory of the entire appetizing department was in my hands.',
+      'Over time, I realized that the store was to Saul Zabar what music was to me: an art, an inspiration, a craft, an adventure to be explored, savored, and cherished. It doesn\u2019t matter what form it takes on \u2014 our art feeds our souls.',
+      'I am fortunate. I was able to live my dream, work and live in New York City, and feed my creativity with the countless stories of the individuals that surrounded me.'
+    ],
+    likes: 11,
+    comments: []
+  },
+  {
+    id: 'untitled-poem',
+    category: 'Poetry',
+    title: 'Untitled (draft)',
+    date: '2026-06-01',
+    tags: ['poetry', 'draft'],
+    excerpt: 'A placeholder slot, waiting for a real poem to take its place.',
+    quote: null,
+    body: [
+      'placeholder \u2014 drop a poem here to replace this text.',
+      'Line breaks, stanza spacing, and italics will all carry over once real verse is pasted in.'
+    ],
+    likes: 3,
+    comments: []
+  },
+  {
+    id: 'untitled-story',
+    category: 'Short Stories',
+    title: 'Working Title',
+    date: '2026-05-14',
+    tags: ['fiction', 'draft'],
+    excerpt: 'A placeholder slot for a short story \u2014 replace with the real draft when ready.',
+    quote: null,
+    body: [
+      'placeholder \u2014 drop a short story here to replace this text.',
+      'This card exists to show how longer fiction will read in this layout: title, dateline, pull-quote, then flowing paragraphs.'
+    ],
+    likes: 2,
+    comments: []
+  }
+];
+
+function monthShort(d) {
+  return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+}
+function fmtLong(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return monthShort(d) + ' ' + d.getDate() + ', ' + d.getFullYear();
+}
+function fmtShort(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return monthShort(d) + ' \u2019' + String(d.getFullYear()).slice(2);
+}
+
+const STORAGE_KEY = 'labyrinthine_letters_v1';
+
+class Component extends DCLogic {
+  state = {
+    view: 'list',
+    activePostId: null,
+    activeCategory: null,
+    activeTag: null,
+    search: '',
+    commentName: '',
+    commentDraft: '',
+    likedMap: {},
+    likeDeltas: {},
+    userComments: {},
+    isAdmin: false,
+    composerOpen: false,
+    customPosts: [],
+    publishedSnippet: '',
+    draftTitle: '',
+    draftCategory: CATEGORY_LIST[0],
+    draftDate: new Date().toISOString().slice(0, 10),
+    draftTags: '',
+    draftExcerpt: '',
+    draftQuote: '',
+    draftBody: '',
+    adminGateOpen: false,
+    adminPassInput: '',
+    adminError: ''
+  };
+
+  componentDidMount() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        this.setState({
+          likedMap: saved.likedMap || {},
+          likeDeltas: saved.likeDeltas || {},
+          userComments: saved.userComments || {},
+          customPosts: saved.customPosts || []
+        });
+      }
+    } catch (e) {}
+  }
+
+  persist(next) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        likedMap: next.likedMap ?? this.state.likedMap,
+        likeDeltas: next.likeDeltas ?? this.state.likeDeltas,
+        userComments: next.userComments ?? this.state.userComments,
+        customPosts: next.customPosts ?? this.state.customPosts
+      }));
+    } catch (e) {}
+  }
+
+  goHome = () => this.setState({ view: 'list', activePostId: null });
+
+  openPost = (id) => this.setState({ view: 'post', activePostId: id, commentName: '', commentDraft: '' });
+
+  setSearch = (e) => this.setState({ search: e.target.value, view: 'list', activePostId: null });
+
+  setCommentName = (e) => this.setState({ commentName: e.target.value });
+  setCommentDraft = (e) => this.setState({ commentDraft: e.target.value });
+
+  toggleTag = (tag) => this.setState((s) => ({
+    activeTag: s.activeTag === tag ? null : tag,
+    activeCategory: null,
+    view: 'list',
+    activePostId: null
+  }));
+
+  filterCategory = (cat) => this.setState((s) => ({
+    activeCategory: s.activeCategory === cat ? null : cat,
+    activeTag: null,
+    view: 'list',
+    activePostId: null
+  }));
+
+  clearFilters = () => this.setState({ activeTag: null, activeCategory: null, search: '' });
+
+  toggleLike = (id) => {
+    const liked = { ...this.state.likedMap };
+    const deltas = { ...this.state.likeDeltas };
+    if (liked[id]) {
+      delete liked[id];
+      deltas[id] = (deltas[id] || 1) - 1;
+    } else {
+      liked[id] = true;
+      deltas[id] = (deltas[id] || 0) + 1;
+    }
+    this.setState({ likedMap: liked, likeDeltas: deltas });
+    this.persist({ likedMap: liked, likeDeltas: deltas });
+  };
+
+  submitComment = () => {
+    const { commentName, commentDraft, activePostId, userComments } = this.state;
+    if (!commentDraft.trim() || !activePostId) return;
+    const list = userComments[activePostId] ? [...userComments[activePostId]] : [];
+    list.push({
+      author: commentName.trim() || 'Anonymous',
+      date: fmtLong(new Date().toISOString().slice(0, 10)),
+      text: commentDraft.trim()
+    });
+    const next = { ...userComments, [activePostId]: list };
+    this.setState({ userComments: next, commentDraft: '', commentName: '' });
+    this.persist({ userComments: next });
+  };
+
+  onAdminClick = () => {
+    if (this.state.isAdmin) {
+      this.setState({ composerOpen: true, publishedSnippet: '' });
+      return;
+    }
+    this.setState({ adminGateOpen: true, adminPassInput: '', adminError: '' });
+  };
+
+  setAdminPassInput = (e) => this.setState({ adminPassInput: e.target.value, adminError: '' });
+
+  submitAdminPass = () => {
+    if (this.state.adminPassInput === 'Dedalus-Maze-7x9!') {
+      this.setState({ isAdmin: true, adminGateOpen: false, composerOpen: true, publishedSnippet: '', adminPassInput: '' });
+    } else {
+      this.setState({ adminError: 'Incorrect passphrase.' });
+    }
+  };
+
+  closeAdminGate = () => this.setState({ adminGateOpen: false, adminError: '' });
+
+  closeComposer = () => this.setState({ composerOpen: false, publishedSnippet: '' });
+
+  setDraftTitle = (e) => this.setState({ draftTitle: e.target.value });
+  setDraftCategory = (e) => this.setState({ draftCategory: e.target.value });
+  setDraftDate = (e) => this.setState({ draftDate: e.target.value });
+  setDraftTags = (e) => this.setState({ draftTags: e.target.value });
+  setDraftExcerpt = (e) => this.setState({ draftExcerpt: e.target.value });
+  setDraftQuote = (e) => this.setState({ draftQuote: e.target.value });
+  setDraftBody = (e) => this.setState({ draftBody: e.target.value });
+
+  saveDraft = () => {
+    const s = this.state;
+    if (!s.draftBody.trim()) {
+      this.setState({ adminError: 'Body text is required.' });
+      return;
+    }
+    const finalTitle = s.draftTitle.trim() || s.draftBody.trim().replace(/\s+/g, ' ').slice(0, 40);
+    const slug = finalTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'entry';
+    const post = {
+      id: slug + '-' + Date.now().toString(36),
+      category: s.draftCategory,
+      title: finalTitle,
+      date: s.draftDate,
+      tags: s.draftTags.split(',').map((t) => t.trim()).filter(Boolean),
+      excerpt: s.draftExcerpt.trim() || s.draftBody.trim().slice(0, 140),
+      quote: s.draftQuote.trim() || null,
+      body: s.draftBody.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean),
+      likes: 0,
+      comments: []
+    };
+    const nextCustom = [...s.customPosts, post];
+    this.setState({
+      customPosts: nextCustom,
+      publishedSnippet: this.generateSnippet(post),
+      draftTitle: '', draftTags: '', draftExcerpt: '', draftQuote: '', draftBody: '',
+      draftCategory: CATEGORY_LIST[0], draftDate: new Date().toISOString().slice(0, 10),
+      adminError: ''
+    });
+    this.persist({ customPosts: nextCustom });
+  };
+
+  generateSnippet(post) {
+    return '  {\n' +
+      '    id: ' + JSON.stringify(post.id) + ',\n' +
+      '    category: ' + JSON.stringify(post.category) + ',\n' +
+      '    title: ' + JSON.stringify(post.title) + ',\n' +
+      '    date: ' + JSON.stringify(post.date) + ',\n' +
+      '    tags: ' + JSON.stringify(post.tags) + ',\n' +
+      '    excerpt: ' + JSON.stringify(post.excerpt) + ',\n' +
+      '    quote: ' + JSON.stringify(post.quote) + ',\n' +
+      '    body: ' + JSON.stringify(post.body, null, 6).replace(/\n/g, '\n    ') + ',\n' +
+      '    likes: 0,\n' +
+      '    comments: []\n' +
+      '  },';
+  }
+
+  buildPost(base) {
+    const delta = this.state.likeDeltas[base.id] || 0;
+    const liked = !!this.state.likedMap[base.id];
+    const extraComments = this.state.userComments[base.id] || [];
+    const allComments = [...base.comments, ...extraComments];
+    return {
+      ...base,
+      dateDisplay: fmtLong(base.date),
+      likeCount: base.likes + delta,
+      likeGlyph: liked ? '\u2726' : '\u2727',
+      likeColor: liked ? '#e8b85a' : '#c9933a',
+      likeBorder: liked ? 'rgba(232,184,90,.6)' : 'rgba(201,147,58,.4)',
+      likeWord: 'Likes',
+      commentCount: allComments.length,
+      commentCountLabel: allComments.length + (allComments.length === 1 ? ' comment' : ' comments'),
+      comments: allComments,
+      tagNames: base.tags,
+      onOpen: () => this.openPost(base.id),
+      onLike: () => this.toggleLike(base.id),
+      tagChips: base.tags.map((t) => ({ name: t, onClick: () => this.toggleTag(t) }))
+    };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const allBuilt = [...POSTS_BASE, ...s.customPosts].map((p) => this.buildPost(p));
+
+    let filtered = allBuilt;
+    if (s.activeCategory) filtered = filtered.filter((p) => p.category === s.activeCategory);
+    if (s.activeTag) filtered = filtered.filter((p) => p.tags.includes(s.activeTag));
+    if (s.search.trim()) {
+      const q = s.search.trim().toLowerCase();
+      filtered = filtered.filter((p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.excerpt.toLowerCase().includes(q) ||
+        p.body.join(' ').toLowerCase().includes(q) ||
+        p.tags.some((t) => t.toLowerCase().includes(q))
+      );
+    }
+    filtered = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    const tagCounts = {};
+    allBuilt.forEach((p) => p.tags.forEach((t) => { tagCounts[t] = (tagCounts[t] || 0) + 1; }));
+    const tagList = Object.keys(tagCounts).sort().map((name) => ({
+      name,
+      count: tagCounts[name],
+      onClick: () => this.toggleTag(name),
+      bg: s.activeTag === name ? 'rgba(201,147,58,.2)' : 'rgba(201,147,58,.06)',
+      border: s.activeTag === name ? '#c9933a' : 'rgba(201,147,58,.3)',
+      color: s.activeTag === name ? '#e8b85a' : '#c9933a'
+    }));
+
+    const indexList = [...allBuilt].sort((a, b) => new Date(b.date) - new Date(a.date)).map((p) => ({
+      title: p.title,
+      dateShort: fmtShort(p.date),
+      onOpen: p.onOpen,
+      color: s.activePostId === p.id ? '#e8b85a' : '#c9c2ab'
+    }));
+
+    const categories = CATEGORY_LIST.map((label) => ({
+      label,
+      active: s.activeCategory === label,
+      onClick: () => this.filterCategory(label)
+    }));
+
+    const currentPost = s.activePostId ? allBuilt.find((p) => p.id === s.activePostId) : null;
+
+    let filterLabel = '';
+    if (s.search.trim()) filterLabel = 'Search: \u201c' + s.search.trim() + '\u201d (' + filtered.length + ')';
+    else if (s.activeTag) filterLabel = 'Tag: #' + s.activeTag + ' (' + filtered.length + ')';
+    else if (s.activeCategory) filterLabel = s.activeCategory + ' (' + filtered.length + ')';
+
+    return {
+      isHome: s.view === 'list' && !s.activeCategory && !s.activeTag && !s.search.trim(),
+      viewingPost: s.view === 'post' && !!currentPost,
+      currentPost,
+      filteredPosts: filtered,
+      noResults: filtered.length === 0,
+      filterLabel,
+      clearFilters: this.clearFilters,
+      categories,
+      tagList,
+      indexList,
+      search: s.search,
+      setSearch: this.setSearch,
+      commentName: s.commentName,
+      commentDraft: s.commentDraft,
+      setCommentName: this.setCommentName,
+      setCommentDraft: this.setCommentDraft,
+      submitComment: this.submitComment,
+      goHome: this.goHome,
+      adminLabel: s.isAdmin ? '+ New Entry' : '\uD83D\uDD12 Admin',
+      onAdminClick: this.onAdminClick,
+      composerOpen: s.composerOpen,
+      closeComposer: this.closeComposer,
+      adminGateOpen: s.adminGateOpen,
+      adminPassInput: s.adminPassInput,
+      adminError: s.adminError,
+      setAdminPassInput: this.setAdminPassInput,
+      submitAdminPass: this.submitAdminPass,
+      closeAdminGate: this.closeAdminGate,
+      categoryOptions: CATEGORY_LIST,
+      draftTitle: s.draftTitle,
+      draftCategory: s.draftCategory,
+      draftDate: s.draftDate,
+      draftTags: s.draftTags,
+      draftExcerpt: s.draftExcerpt,
+      draftQuote: s.draftQuote,
+      draftBody: s.draftBody,
+      setDraftTitle: this.setDraftTitle,
+      setDraftCategory: this.setDraftCategory,
+      setDraftDate: this.setDraftDate,
+      setDraftTags: this.setDraftTags,
+      setDraftExcerpt: this.setDraftExcerpt,
+      setDraftQuote: this.setDraftQuote,
+      setDraftBody: this.setDraftBody,
+      saveDraft: this.saveDraft,
+      publishedSnippet: s.publishedSnippet,
+      contentTopPad: s.view === 'list' && !s.activeCategory && !s.activeTag && !s.search.trim() ? '10px' : '60px',
+      stars: Array.from({ length: 40 }, (_, i) => ({
+        left: (i * 37 % 100) + '%',
+        top: (i * 53 % 100) + '%',
+        dur: (2 + (i % 4)) + 's',
+        delay: (i % 5) * 0.4 + 's'
+      }))
+    };
+  }
+}
+
+</script>
+</body>
+</html>
