@@ -635,7 +635,11 @@ class Component extends DCLogic {
 
   renderVals() {
     const s = this.state;
-    const allBuilt = [...POSTS_BASE, ...s.customPosts].map((p, i) => ({ ...this.buildPost(p), _idx: i }));
+    const allBuilt = [...POSTS_BASE, ...s.customPosts].map((p, i) => {
+      const m = /-([0-9a-z]+)$/.exec(p.id);
+      const created = m ? parseInt(m[1], 36) : 0;
+      return { ...this.buildPost(p), _idx: i, _created: isNaN(created) ? 0 : created };
+    });
 
     let filtered = allBuilt;
     if (s.activeCategory) filtered = filtered.filter((p) => p.category === s.activeCategory);
@@ -649,7 +653,7 @@ class Component extends DCLogic {
         p.tags.some((t) => t.toLowerCase().includes(q))
       );
     }
-    filtered = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date) || b._idx - a._idx);
+    filtered = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date) || b._created - a._created || b._idx - a._idx);
 
     const tagCounts = {};
     allBuilt.forEach((p) => p.tags.forEach((t) => { tagCounts[t] = (tagCounts[t] || 0) + 1; }));
@@ -662,7 +666,7 @@ class Component extends DCLogic {
       color: s.activeTag === name ? '#e8b85a' : '#c9933a'
     }));
 
-    const indexList = [...allBuilt].sort((a, b) => new Date(b.date) - new Date(a.date) || b._idx - a._idx).map((p) => ({
+    const indexList = [...allBuilt].sort((a, b) => new Date(b.date) - new Date(a.date) || b._created - a._created || b._idx - a._idx).map((p) => ({
       title: p.title,
       dateShort: fmtShort(p.date),
       onOpen: p.onOpen,
