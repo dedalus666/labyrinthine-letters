@@ -1,4 +1,24 @@
-<!DOCTYPE html>
+<!DOC  {
+    id: "sky-woman-mrqouczw",
+    category: "Song Lyrics",
+    title: "Sky Woman",
+    date: "2026-07-18",
+    tags: ["Dedalus","music"],
+    excerpt: "And together they created the land by bringing mud from undersea",
+    quote: "To the shell of a turtle’s back",
+    image: "images/sky-woman-mrqorvqy.jpg",
+    body: [
+          "Native Iroquois legend tells this story of the creation of the universe. There was a great island in the sky where the Sky People lived - and because of a jealous husband, (she was pregnant with twins) Sky Woman was cast out. But she was saved by the animals and together they created the earth and its people from a little mud on the shell of a turtle's back. Her twin sons, Sapling and Flint helped shape the earth with their many contributions; beaches and rainbows, volcanoes, earthquakes and spiders.",
+          "Native Iroquois legend tells of a great island floating high in the sky amongst the clouds\nOn which the Sky People lived long before the world that we know existed \nFeelings of death and sadness were not experienced amongst the Sky People. \nHowever, one day the Sky Woman realized she was giving birth to twins",
+          "Her husband flew into a rage. \nHer husband tore out a light-giving tree and \nas she peered down through the hole, \nher husband pushed her to the world below. \nTwo birds caught her in the air and carried her to other animals. \nAnd together they created the land by bringing mud from undersea \n(To the shell of a turtle’s back)",
+          "The Sky Woman stepped onto that land and created the moon, sun and stars. \nShe gave birth to twin sons, Sapling and Flint. Sapling was the good son\nHe was gentle and kind, empathy on his mind, creating beaches and rainbows \nBut edgy Flint was close behind seeking to sabotage and undermine",
+          "Flint made sure the rivers flowed in only one direction \nHe put spiky bones in fish and thorns on rose and berry bushes\nHe created winter, ice, earthquakes volcanoes and tornadoes\nHe put poison into snakes and spiders and on toads and ivy too",
+          "The Great Spirit, Mother of birth\nWas pleased with the work they had done on the earth\nThe final gift she bestowed onto man \nWas the freedom to dream and rule over the land \nBut she had not factored him willing\nTo savagely murder - take pleasure in killing\nEach other, all animals, the ocean, forests, everything that breathes"
+    ],
+    likes: 0,
+    comments: []
+  },
+TYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -68,6 +88,7 @@
               <button onClick="{{ copySnippet }}" style="flex-shrink:0;background:none;border:1px solid rgba(201,147,58,.4);color:#c9933a;font-family:Cinzel,serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;cursor:pointer">{{ snippetCopyLabel }}</button>
             </div>
             <textarea readonly value="{{ publishedSnippet }}" style="width:100%;height:140px;background:#0f0d0a;color:#c9c2ab;border:1px solid rgba(201,147,58,.3);font-family:monospace;font-size:12px;padding:10px"></textarea>
+            <p style="margin:10px 0 0;font-size:13px;color:#8a9ba8">Once it's live in the code, <button onClick="{{ clearLocalDrafts }}" style="background:none;border:none;color:#c9933a;text-decoration:underline;cursor:pointer;font-family:inherit;font-size:inherit;padding:0">clear the local test copy</button> so it doesn't show twice on this browser.</p>
           </div>
         </sc-if>
 
@@ -151,7 +172,7 @@
               <sc-if value="{{ block.isLyric }}" hint-placeholder-val="{{ true }}">
               </sc-if>
               <sc-if value="{{ block.text }}" hint-placeholder-val="{{ false }}">
-                <p style="margin:0 0 22px">{{ block.text }}</p>
+                <p style="margin:0 0 22px;line-height:1.3">{{ block.text }}</p>
               </sc-if>
             </sc-for>
           </div>
@@ -276,26 +297,6 @@
 const CATEGORY_LIST = ['Poetry','Song Lyrics','Short Stories','Reviews','Essays'];
 
 const POSTS_BASE = [
-  {
-    id: "sky-woman-mrqouczw",
-    category: "Song Lyrics",
-    title: "Sky Woman",
-    date: "2026-07-18",
-    tags: ["Dedalus","music"],
-    excerpt: "And together they created the land by bringing mud from undersea",
-    quote: "To the shell of a turtle’s back",
-    image: "images/sky-woman-mrqorvqy.jpg",
-    body: [
-          "Native Iroquois legend tells this story of the creation of the universe. There was a great island in the sky where the Sky People lived - and because of a jealous husband, (she was pregnant with twins) Sky Woman was cast out. But she was saved by the animals and together they created the earth and its people from a little mud on the shell of a turtle's back. Her twin sons, Sapling and Flint helped shape the earth with their many contributions; beaches and rainbows, volcanoes, earthquakes and spiders.",
-          "Native Iroquois legend tells of a great island floating high in the sky amongst the clouds\nOn which the Sky People lived long before the world that we know existed \nFeelings of death and sadness were not experienced amongst the Sky People. \nHowever, one day the Sky Woman realized she was giving birth to twins",
-          "Her husband flew into a rage. \nHer husband tore out a light-giving tree and \nas she peered down through the hole, \nher husband pushed her to the world below. \nTwo birds caught her in the air and carried her to other animals. \nAnd together they created the land by bringing mud from undersea \n(To the shell of a turtle’s back)",
-          "The Sky Woman stepped onto that land and created the moon, sun and stars. \nShe gave birth to twin sons, Sapling and Flint. Sapling was the good son\nHe was gentle and kind, empathy on his mind, creating beaches and rainbows \nBut edgy Flint was close behind seeking to sabotage and undermine",
-          "Flint made sure the rivers flowed in only one direction \nHe put spiky bones in fish and thorns on rose and berry bushes\nHe created winter, ice, earthquakes volcanoes and tornadoes\nHe put poison into snakes and spiders and on toads and ivy too",
-          "The Great Spirit, Mother of birth\nWas pleased with the work they had done on the earth\nThe final gift she bestowed onto man \nWas the freedom to dream and rule over the land \nBut she had not factored him willing\nTo savagely murder - take pleasure in killing\nEach other, all animals, the ocean, forests, everything that breathes"
-    ],
-    likes: 0,
-    comments: []
-  },
   {
     id: "rosabelle-believe-mrqmpuns",
     category: "Song Lyrics",
@@ -581,6 +582,11 @@ class Component extends DCLogic {
     this.persist({ customPosts: nextCustom });
   };
 
+  clearLocalDrafts = () => {
+    this.setState({ customPosts: [] });
+    this.persist({ customPosts: [] });
+  };
+
   generateSnippet(post) {
     return '  {\n' +
       '    id: ' + JSON.stringify(post.id) + ',\n' +
@@ -729,6 +735,7 @@ class Component extends DCLogic {
       setDraftBody: this.setDraftBody,
       saveDraft: this.saveDraft,
       publishedSnippet: s.publishedSnippet,
+      clearLocalDrafts: this.clearLocalDrafts,
       copySnippet: this.copySnippet,
       snippetCopyLabel: s.snippetCopied ? 'Copied!' : 'Copy Code',
       contentTopPad: s.view === 'list' && !s.activeCategory && !s.activeTag && !s.search.trim() ? '10px' : '60px',
