@@ -79,7 +79,14 @@
           </div>
           <input value="{{ draftTags }}" onChange="{{ setDraftTags }}" placeholder="Tags, comma separated" style="background:rgba(240,233,214,.05);border:1px solid rgba(201,147,58,.3);color:#f0e9d6;font-family:'Cormorant Garamond',serif;font-size:16px;padding:11px 13px;outline:none"/>
           <input value="{{ draftExcerpt }}" onChange="{{ setDraftExcerpt }}" placeholder="Short excerpt (shown in list view)" style="background:rgba(240,233,214,.05);border:1px solid rgba(201,147,58,.3);color:#f0e9d6;font-family:'Cormorant Garamond',serif;font-size:16px;padding:11px 13px;outline:none"/>
-          <input value="{{ draftImage }}" onChange="{{ setDraftImage }}" placeholder="Image URL (optional)" style="background:rgba(240,233,214,.05);border:1px solid rgba(201,147,58,.3);color:#f0e9d6;font-family:'Cormorant Garamond',serif;font-size:16px;padding:12px 14px;margin-bottom:12px;width:100%">
+          <input value="{{ draftImage }}" onChange="{{ setDraftImage }}" placeholder="Image URL (optional)" style="background:rgba(240,233,214,.05);border:1px solid rgba(201,147,58,.3);color:#f0e9d6;font-family:'Cormorant Garamond',serif;font-size:16px;padding:12px 14px;width:100%">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <label style="font-family:Cinzel,serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#8a9ba8">or upload a file</label>
+            <input type="file" accept="image/*" onChange="{{ onImageFileChange }}" style="color:#c9c2ab;font-family:'Cormorant Garamond',serif;font-size:14px;flex:1"/>
+          </div>
+          <sc-if value="{{ draftImage }}" hint-placeholder-val="{{ false }}">
+            <img alt="preview" ref="{{ draftImageRef }}" style="max-height:140px;border:1px solid rgba(201,147,58,.3);margin-bottom:12px"/>
+          </sc-if>
           <input value="{{ draftQuote }}" onChange="{{ setDraftQuote }}" placeholder="Pull-quote (optional)" style="background:rgba(240,233,214,.05);border:1px solid rgba(201,147,58,.3);color:#f0e9d6;font-family:'IM Fell English',serif;font-style:italic;font-size:16px;padding:11px 13px;outline:none"/>
           <textarea value="{{ draftBody }}" onChange="{{ setDraftBody }}" placeholder="Body — separate paragraphs with a blank line" rows="8" style="background:rgba(240,233,214,.05);border:1px solid rgba(201,147,58,.3);color:#f0e9d6;font-family:'Cormorant Garamond',serif;font-size:16px;padding:11px 13px;outline:none;resize:vertical"></textarea>
           <sc-if value="{{ adminError }}" hint-placeholder-val="{{ false }}">
@@ -118,7 +125,7 @@
           <div style="color:#8a9ba8;font-size:15px;letter-spacing:.03em;margin-bottom:30px">{{ currentPost.dateDisplay }}</div>
 
           <sc-if value="{{ currentPost.image }}" hint-placeholder-val="{{ false }}">
-            <img src="{{ currentPost.image }}" alt="{{ currentPost.title }}" style="width:100%;max-height:480px;object-fit:cover;margin:0 0 34px;border:1px solid rgba(201,147,58,.3)"/>
+            <img alt="{{ currentPost.title }}" ref="{{ currentPost.imgRef }}" style="width:100%;max-height:480px;object-fit:cover;margin:0 0 34px;border:1px solid rgba(201,147,58,.3)"/>
           </sc-if>
 
           <sc-if value="{{ currentPost.quote }}" hint-placeholder-val="{{ false }}">
@@ -142,6 +149,7 @@
               <span>{{ currentPost.likeGlyph }}</span> {{ currentPost.likeCount }} {{ currentPost.likeWord }}
             </button>
             <span style="color:#8a9ba8;font-size:14px;letter-spacing:.05em">{{ currentPost.commentCountLabel }}</span>
+            <button onClick="{{ currentPost.onCopyLink }}" style="margin-left:auto;background:none;border:1px solid rgba(201,147,58,.4);color:#c9933a;font-family:Cinzel,serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:9px 18px;cursor:pointer" style-hover="border-color:#e8b85a;color:#e8b85a">{{ currentPost.copyLinkLabel }}</button>
           </div>
 
           <section style="margin-top:44px">
@@ -179,7 +187,7 @@
           <sc-for list="{{ filteredPosts }}" as="post" hint-placeholder-count="4">
             <article onClick="{{ post.onOpen }}" style="cursor:pointer;padding:30px 0;border-bottom:1px solid rgba(201,147,58,.15)">
               <sc-if value="{{ post.image }}" hint-placeholder-val="{{ false }}">
-                <img src="{{ post.image }}" alt="{{ post.title }}" style="width:100%;max-height:260px;object-fit:cover;margin-bottom:16px;border:1px solid rgba(201,147,58,.25)"/>
+                <img alt="{{ post.title }}" ref="{{ post.imgRef }}" style="width:100%;max-height:260px;object-fit:cover;margin-bottom:16px;border:1px solid rgba(201,147,58,.25)"/>
               </sc-if>
               <div style="font-family:Cinzel,serif;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#c9933a;margin-bottom:10px">{{ post.category }} &middot; {{ post.dateDisplay }}</div>
               <h2 style="font-family:Cinzel,serif;font-weight:600;font-size:clamp(22px,3vw,32px);margin:0 0 12px;color:#f0e9d6">{{ post.title }}</h2>
@@ -189,6 +197,7 @@
                   <span style="font-size:12.5px;color:#7a5820;letter-spacing:.04em">#{{ tg }}</span>
                 </sc-for>
                 <span style="margin-left:auto;color:#8a9ba8;font-size:13px;letter-spacing:.03em">{{ post.likeCount }} likes &middot; {{ post.commentCount }} comments</span>
+                <button onClick="{{ post.onCopyLink }}" style="background:none;border:1px solid rgba(201,147,58,.35);color:#c9933a;font-family:Cinzel,serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;cursor:pointer" style-hover="border-color:#e8b85a;color:#e8b85a">{{ post.copyLinkLabel }}</button>
               </div>
             </article>
           </sc-for>
@@ -399,6 +408,7 @@ class Component extends DCLogic {
     likeDeltas: {},
     userComments: {},
     isAdmin: false,
+    copiedId: null,
     composerOpen: false,
     customPosts: [],
     publishedSnippet: '',
@@ -428,6 +438,8 @@ class Component extends DCLogic {
         });
       }
     } catch (e) {}
+    const hashId = window.location.hash.replace(/^#/, '');
+    if (hashId) this.setState({ view: 'post', activePostId: hashId });
   }
 
   persist(next) {
@@ -443,7 +455,25 @@ class Component extends DCLogic {
 
   goHome = () => this.setState({ view: 'list', activePostId: null });
 
-  openPost = (id) => this.setState({ view: 'post', activePostId: id, commentName: '', commentDraft: '' });
+  openPost = (id) => {
+    this.setState({ view: 'post', activePostId: id, commentName: '', commentDraft: '' });
+    try { history.replaceState(null, '', '#' + id); } catch (e) {}
+  };
+
+  copyLink = (id, e) => {
+    if (e) e.stopPropagation();
+    const url = window.location.origin + window.location.pathname + '#' + id;
+    const done = () => {
+      this.setState({ copiedId: id });
+      clearTimeout(this._copyTimer);
+      this._copyTimer = setTimeout(() => this.setState({ copiedId: null }), 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done).catch(done);
+    } else {
+      done();
+    }
+  };
 
   setSearch = (e) => this.setState({ search: e.target.value, view: 'list', activePostId: null });
 
@@ -523,6 +553,14 @@ class Component extends DCLogic {
   setDraftExcerpt = (e) => this.setState({ draftExcerpt: e.target.value });
   setDraftQuote = (e) => this.setState({ draftQuote: e.target.value });
   setDraftImage = (e) => this.setState({ draftImage: e.target.value });
+
+  onImageFileChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => this.setState({ draftImage: reader.result });
+    reader.readAsDataURL(file);
+  };
   setDraftBody = (e) => this.setState({ draftBody: e.target.value });
 
   saveDraft = () => {
@@ -593,6 +631,9 @@ class Component extends DCLogic {
       image: base.image || null,
       onOpen: () => this.openPost(base.id),
       onLike: () => this.toggleLike(base.id),
+      onCopyLink: (e) => this.copyLink(base.id, e),
+      copyLinkLabel: this.state.copiedId === base.id ? 'Copied!' : 'Copy Link',
+      imgRef: (el) => { if (el) el.src = base.image || ''; },
       tagChips: base.tags.map((t) => ({ name: t, onClick: () => this.toggleTag(t) }))
     };
   }
@@ -691,6 +732,8 @@ class Component extends DCLogic {
       setDraftExcerpt: this.setDraftExcerpt,
       setDraftQuote: this.setDraftQuote,
       setDraftImage: this.setDraftImage,
+      onImageFileChange: this.onImageFileChange,
+      draftImageRef: (el) => { if (el) el.src = s.draftImage || ''; },
       setDraftBody: this.setDraftBody,
       saveDraft: this.saveDraft,
       publishedSnippet: s.publishedSnippet,
