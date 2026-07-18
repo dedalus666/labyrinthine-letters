@@ -140,8 +140,19 @@
           </sc-if>
 
           <div style="font-size:19px;line-height:1.9;color:#e9e2cf">
-            <sc-for list="{{ currentPost.body }}" as="para" hint-placeholder-count="4">
-              <p style="margin:0 0 22px">{{ para }}</p>
+            <sc-for list="{{ currentPost.bodyBlocks }}" as="block" hint-placeholder-count="4">
+              <sc-if value="{{ block.isLyric }}" hint-placeholder-val="{{ false }}">
+                <div style="margin:0 0 22px">
+                  <sc-for list="{{ block.lines }}" as="line" hint-placeholder-count="3">
+                    <p style="margin:0;line-height:1.3">{{ line.text }}</p>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ block.isLyric }}" hint-placeholder-val="{{ true }}">
+              </sc-if>
+              <sc-if value="{{ block.text }}" hint-placeholder-val="{{ false }}">
+                <p style="margin:0 0 22px">{{ block.text }}</p>
+              </sc-if>
             </sc-for>
           </div>
 
@@ -609,7 +620,10 @@ class Component extends DCLogic {
       onCopyLink: (e) => this.copyLink(base.id, e),
       copyLinkLabel: this.state.copiedId === base.id ? 'Copied!' : 'Share',
       imgRef: (el) => { if (el) el.src = base.image || ''; },
-      tagChips: base.tags.map((t) => ({ name: t, onClick: () => this.toggleTag(t) }))
+      tagChips: base.tags.map((t) => ({ name: t, onClick: () => this.toggleTag(t) })),
+      bodyBlocks: base.body.map((p) => p.includes('\n')
+        ? { isLyric: true, lines: p.split('\n').map((line, i) => ({ text: line, key: i })) }
+        : { isLyric: false, text: p })
     };
   }
 
