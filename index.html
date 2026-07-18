@@ -63,7 +63,10 @@
 
         <sc-if value="{{ publishedSnippet }}" hint-placeholder-val="{{ false }}">
           <div style="background:rgba(201,147,58,.08);border:1px solid rgba(201,147,58,.35);padding:16px;margin-bottom:22px">
-            <p style="margin:0 0 10px;font-size:15px;color:#e8b85a;font-family:'IM Fell English',serif;font-style:italic">Saved to this browser. To publish permanently for everyone, paste this into <code>POSTS_BASE</code> in the file and push to GitHub:</p>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:12px">
+              <p style="margin:0;font-size:15px;color:#e8b85a;font-family:'IM Fell English',serif;font-style:italic">Saved to this browser. To publish permanently for everyone, paste this into <code>POSTS_BASE</code> in the file and push to GitHub:</p>
+              <button onClick="{{ copySnippet }}" style="flex-shrink:0;background:none;border:1px solid rgba(201,147,58,.4);color:#c9933a;font-family:Cinzel,serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;cursor:pointer">{{ snippetCopyLabel }}</button>
+            </div>
             <textarea readonly value="{{ publishedSnippet }}" style="width:100%;height:140px;background:#0f0d0a;color:#c9c2ab;border:1px solid rgba(201,147,58,.3);font-family:monospace;font-size:12px;padding:10px"></textarea>
           </div>
         </sc-if>
@@ -339,6 +342,17 @@ class Component extends DCLogic {
     try { history.replaceState(null, '', '#' + id); } catch (e) {}
   };
 
+  copySnippet = () => {
+    const text = this.state.publishedSnippet;
+    if (!text) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(() => {});
+    }
+    this.setState({ snippetCopied: true });
+    clearTimeout(this._snippetCopyTimer);
+    this._snippetCopyTimer = setTimeout(() => this.setState({ snippetCopied: false }), 2000);
+  };
+
   copyLink = (id, e) => {
     if (e) e.stopPropagation();
     const url = window.location.origin + window.location.pathname + '#' + id;
@@ -511,7 +525,7 @@ class Component extends DCLogic {
       onOpen: () => this.openPost(base.id),
       onLike: () => this.toggleLike(base.id),
       onCopyLink: (e) => this.copyLink(base.id, e),
-      copyLinkLabel: this.state.copiedId === base.id ? 'Copied!' : 'Copy Link',
+      copyLinkLabel: this.state.copiedId === base.id ? 'Copied!' : 'Share',
       imgRef: (el) => { if (el) el.src = base.image || ''; },
       tagChips: base.tags.map((t) => ({ name: t, onClick: () => this.toggleTag(t) }))
     };
@@ -616,6 +630,8 @@ class Component extends DCLogic {
       setDraftBody: this.setDraftBody,
       saveDraft: this.saveDraft,
       publishedSnippet: s.publishedSnippet,
+      copySnippet: this.copySnippet,
+      snippetCopyLabel: s.snippetCopied ? 'Copied!' : 'Copy Code',
       contentTopPad: s.view === 'list' && !s.activeCategory && !s.activeTag && !s.search.trim() ? '10px' : '60px',
       stars: Array.from({ length: 40 }, (_, i) => ({
         left: (i * 37 % 100) + '%',
